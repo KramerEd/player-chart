@@ -8,19 +8,20 @@ import React, {
 import PlayerContext from "./provider/context";
 import AudioDriver from "./driver";
 import playerEvents from "./events";
-import Chart from "./chart";
+import "./index.css";
 
 const Player = () => {
 	const { buffer, audioContext } = useContext<any>(PlayerContext);
 	const [driver, setDriver] = useState<AudioDriver>();
-	const [isMoving, setIsMoving] = useState(false);
 
 	useEffect(() => {
-		const onDrag = (props?: any) => {
-			driver?.drag(props);
+		const onDrag = async (props?: any) => {
+			await driver?.drag(props).then(() => {
+				play();
+			});
 		};
-
 		playerEvents.on("dragCursor", onDrag);
+
 		return () => {
 			playerEvents.off("dragCursor", onDrag);
 		};
@@ -40,8 +41,6 @@ const Player = () => {
 	}, [buffer, audioContext]);
 
 	const play = useCallback(() => {
-		setIsMoving(true);
-
 		driver?.play();
 	}, [driver]);
 
@@ -65,17 +64,18 @@ const Player = () => {
 	}
 
 	if (!driver) {
-		return <div>Loading</div>;
+		return <div>Loading...</div>;
 	}
 
 	return (
 		<div className={"player"}>
-			<button onClick={play}>Play</button>
+			<div className="player-buttons">
+				<button onClick={play}>Play</button>
 
-			<button onClick={pause}>Pause</button>
+				<button onClick={pause}>Pause</button>
 
-			<button onClick={stop}>Stop</button>
-
+				<button onClick={stop}>Stop</button>
+			</div>
 			<input
 				type="range"
 				onChange={onVolumeChange}

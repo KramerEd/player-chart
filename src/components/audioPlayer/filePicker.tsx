@@ -1,23 +1,35 @@
-import React, { ChangeEvent, useCallback, useContext } from 'react';
-import PlayerContext from './provider/context';
-import {readAudio} from './helper';
+import React, { ChangeEvent, useCallback, useContext } from "react";
+import PlayerContext from "./provider/context";
+import { readAudio } from "./helper";
 
 const FilePicker = () => {
-  const {audioFile, setAudioFile} = useContext<any>(PlayerContext);
+	const { audioFile, setAudioFile } = useContext<any>(PlayerContext);
 
-  const getAudio = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
-    const [audio] = event.target.files as any;
-    const arrayBuffer = await readAudio(audio);
-    setAudioFile(arrayBuffer);
-  }, []);
+	const getAudio = useCallback(
+		async (event: ChangeEvent<HTMLInputElement>) => {
+			const [audio] = event.target.files as any;
+			const arrayBuffer = await readAudio(audio);
+			setAudioFile(arrayBuffer);
+		},
+		[]
+	);
 
-  if (audioFile) {
-    return null;
-  }
+	if (audioFile) {
+		return null;
+	}
 
-  return (
-    <input type={'file'} accept="audio/mpeg3" onChange={getAudio} />
-  );
+	return (
+		<>
+			<label htmlFor="music">Select an audiofile:</label>
+			<input
+				id="music"
+				type="file"
+				accept="audio/mpeg3"
+				onChange={getAudio}
+				className="file-picker"
+			/>
+		</>
+	);
 };
 
 export default FilePicker;

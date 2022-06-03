@@ -3,9 +3,10 @@ import React, { useContext, useEffect, useState } from "react";
 import PlayerContext from "./provider/context";
 
 import Chart from "./chart";
+import playerEvents from "./events";
 
 const Graphic = () => {
-	const { buffer, audioContext } = useContext<any>(PlayerContext);
+	const { buffer } = useContext<any>(PlayerContext);
 	const [drawer, setDrawer] = useState<Chart>();
 
 	// const [cursor, setCursor] = useState<number>(audioContext.currentTime);
@@ -38,22 +39,12 @@ const Graphic = () => {
 			chartDrawer.drawCursor();
 			chartDrawer.showSVG();
 
-			// setTimeout(() => {
-			//   chartDrawer.moveCursor(30);
-			//
-			//   setTimeout(() => {
-			//     chartDrawer.moveCursor(20);
-			//   }, 1500);
-			// }, 2000);
+			const moveCursor = (props = 0) => {
+				chartDrawer.moveCursor(props);
+			};
 
-			// setInterval(() => {
-			// 	if (buffer.duration === audioContext.currentTime)
-			// 		clearInterval();
+			playerEvents.on("cursorPosition", moveCursor);
 
-			// 	chartDrawer.moveCursor(
-			// 		(audioContext.currentTime * 100) / buffer.duration
-			// 	);
-			// }, buffer.duration / 10);
 			setDrawer(chartDrawer);
 		};
 		init();
@@ -63,7 +54,7 @@ const Graphic = () => {
 		return null;
 	}
 
-	return <div id={"chart"} style={{ width: "100%", height: 400 }} />;
+	return <div id={"chart"} style={{ width: "100%", height: "50px" }} />;
 };
 
 export default Graphic;

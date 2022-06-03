@@ -1,6 +1,4 @@
-import { thresholdSturges } from "d3";
 import playerEvents from "./events";
-
 class AudioDriver {
 	private audioContext: AudioContext;
 	private readonly audioBuffer?: AudioBuffer = undefined;
@@ -10,8 +8,11 @@ class AudioDriver {
 
 	private startedAt = 0;
 	private pausedAt = 0;
-	private isRunning = false;
 
+	private cursorPos = 0;
+	public interval: NodeJS.Timer | undefined;
+
+	public isRunning = false;
 	private volume = 1;
 
 	constructor(buffer: AudioBuffer, context: AudioContext) {
@@ -50,6 +51,13 @@ class AudioDriver {
 		this.pausedAt = 0;
 
 		this.isRunning = true;
+
+		if (this.isRunning) {
+			this.interval = setInterval(() => {
+				this.cursorPos = this.cursorPos + 0.1;
+				playerEvents.emit("cursorPosition", this.cursorPos);
+			}, this.audioBuffer.duration);
+		}
 	}
 
 	async pause(reset?: boolean) {
@@ -66,29 +74,39 @@ class AudioDriver {
 		this.gainNode?.disconnect(); // disconnect volume controller
 		this.bufferSource.disconnect(); // remove buffer source from hardware speakers. We can't reuse the same buffer source, always should be new one.
 		this.isRunning = false;
+
+		if (reset) {
+			this.cursorPos = 0;
+			playerEvents.emit("cursorPosition", this.cursorPos);
+		}
+		clearInterval(this.interval);
 	}
 
-	async drag(props: any) {
+	async drag(props?: any) {
 		if (!this.bufferSource) return;
 
 		if (this.audioBuffer)
 			this.pausedAt = (props.percent * this.audioBuffer?.duration) / 100;
 
-		await this.audioContext.suspend();
-
 		this.bufferSource.stop(this.pausedAt);
 		this.gainNode?.disconnect();
 		this.bufferSource.disconnect();
 		this.isRunning = false;
+
+		this.cursorPos = props?.percent;
+
+		clearInterval(this.interval);
+
+		await this.audioContext.suspend().then(
+			
+		);
 	}
 
 	public changeVolume(volume: number) {
 		this.volume = volume;
-
 		if (this.gainNode) {
 			this.gainNode.gain.value = volume;
 		}
 	}
 }
-
 export default AudioDriver;

@@ -1,37 +1,48 @@
-import React, { ReactElement, useCallback, useState, useRef } from 'react';
-import PlayerContext from './context';
+import React, { ReactElement, useCallback, useState, useRef } from "react";
+import PlayerContext from "./context";
 
-const PlayerProvider = ({children}: {children: ReactElement | ReactElement[]}) => {
-  const [audioFile, setFile] = useState<ArrayBuffer>();
-  const audioContext = useRef(new AudioContext()).current;
-  const [buffer, setBuffer] = useState<AudioBuffer>();
+const PlayerProvider = ({
+	children,
+}: {
+	children: ReactElement | ReactElement[];
+}) => {
+	const [audioFile, setFile] = useState<ArrayBuffer>();
+	const audioContext = useRef(new AudioContext()).current;
+	const [buffer, setBuffer] = useState<AudioBuffer>();
 
-  const decodeAudioBuffer = useCallback(async (file: ArrayBuffer) => {
-    if (!file) {
-      return;
-    }
+	const [time, setTime] = useState(0);
 
-    const audioBuffer = await audioContext.decodeAudioData(file);
-    setBuffer(audioBuffer);
-  }, [audioContext]);
+	const decodeAudioBuffer = useCallback(
+		async (file: ArrayBuffer) => {
+			if (!file) {
+				return;
+			}
 
-  const setAudioFile = useCallback((arrayBuffer: ArrayBuffer) => {
-    setFile(arrayBuffer);
-    decodeAudioBuffer(arrayBuffer);
-  }, []);
+			const audioBuffer = await audioContext.decodeAudioData(file);
+			setBuffer(audioBuffer);
+		},
+		[audioContext]
+	);
 
-  const contextValue = {
-    audioFile,
-    setAudioFile,
-    buffer,
-    audioContext,
-  };
+	const setAudioFile = useCallback((arrayBuffer: ArrayBuffer) => {
+		setFile(arrayBuffer);
+		decodeAudioBuffer(arrayBuffer);
+	}, []);
 
-  return (
-    <PlayerContext.Provider value={contextValue}>
-      {children}
-    </PlayerContext.Provider>
-  );
+	const contextValue = {
+		audioFile,
+		setAudioFile,
+		buffer,
+		audioContext,
+		time,
+		setTime,
+	};
+
+	return (
+		<PlayerContext.Provider value={contextValue}>
+			{children}
+		</PlayerContext.Provider>
+	);
 };
 
 export default PlayerProvider;
